@@ -4,6 +4,7 @@
 #include <vector>
 #include "ProcMem.h"
 #include "csgo.hpp"
+#include "Hax.h"
 
 using namespace hazedumper::signatures;
 using namespace hazedumper::netvars;
@@ -17,7 +18,7 @@ DWORD LocalPlayer; // Our local player in the current session
 DWORD clientDLL; // panorama_client.dll
 DWORD engineDLL; // engine.dll
 
-bool trigger, glow;
+bool trigger, glow, bhop;
 
 //TODO: Pointer and health offset are working in CE but are not returning the right value!
 //"client_panorama.dll"+0xD29B1C <- Local Player
@@ -74,6 +75,14 @@ void Glow() {
 	}
 }
 
+void Bhop() {
+	byte flag = mem.Read<byte>(LocalPlayer + m_fFlags);
+
+	if (GetAsyncKeyState(VK_SPACE) && flag & (1 << 0)) {
+		mem.Write<DWORD>(clientDLL + dwForceJump, 6);
+	}
+}
+
 #pragma endregion
 
 #pragma region debugging
@@ -82,6 +91,7 @@ void PrintCStates() {
 	system("cls");
 	std::cout << std::boolalpha << "Triggerbot: " << trigger << std::endl;
 	std::cout << std::boolalpha << "Glow: " << glow << std::endl;
+	std::cout << std::boolalpha << "bHop: " << bhop << std::endl;
 }
 
 #pragma endregion
@@ -89,7 +99,7 @@ void PrintCStates() {
 #pragma region input
 
 //Key flags
-int f1 = 0, f2 = 0;
+int f1 = 0, f2 = 0, f3 = 0;
 void InputHandle() {
 	if (GetAsyncKeyState(VK_F1) && f1 == 0) {
 		f1 = 1;
@@ -103,13 +113,21 @@ void InputHandle() {
 		PrintCStates();
 	}
 
+	if (GetAsyncKeyState(VK_F3) && f3 == 0) {
+		f3 = 1;
+		bhop = !bhop;
+		PrintCStates();
+	}
+
 	if (GetAsyncKeyState(VK_F1) == 0) f1 = 0;
 	if (GetAsyncKeyState(VK_F2) == 0) f2 = 0;
+	if (GetAsyncKeyState(VK_F3) == 0) f3 = 0;
 }
 
 void DoActions() {
 	if (trigger) Trigger();
 	if (glow) Glow();
+	if (bhop) Bhop();
 }
 
 #pragma endregion

@@ -21,6 +21,9 @@
     <ClCompile Include="ProcMem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Hax.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ProcMem.h">
@@ -30,6 +33,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Tf2Thesting.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Hax.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

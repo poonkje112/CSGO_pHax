@@ -1,2 +1,3 @@
-﻿  Tf2Thesting.cpp
-  Tf2Thesting.vcxproj -> D:\Git\Tf2Thesting\Tf2Thesting\Debug\Tf2Thesting.exe
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(459,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (Tf2Thesting.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  Tf2Thesting.cpp
+  Tf2Thesting.vcxproj -> D:\Git\Tf2Thesting\Tf2Thesting\Debug\CSGOThesting.exe
