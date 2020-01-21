@@ -1,39 +1,42 @@
 #include "Hax.h"
-#include "csgo.hpp"
 
-using namespace hazedumper::signatures;
-using namespace hazedumper::netvars;
-
-//const DWORD EntLoopDist = 0x10; // The distance we want to loop through the entity list
-
-void Hax::Trigger(DWORD LocalPlayer, DWORD clientDLL, ProcMem& mem)
+void Hax::Trigger(uintptr_t localPlayer, uintptr_t clientDll, ProcMem& mem)
 {
-	int crosshairId = mem.Read<int>(LocalPlayer + m_iCrosshairId); // Here we get the entity id what our crosshair is aiming at
+	int crosshairId = mem.Read<int>(localPlayer + m_iCrosshairId); // Here we get the entity id what our crosshair is aiming at
+	int myTeam = mem.Read<int>(localPlayer + m_iTeamNum); // Getting our team number
 
 	if (crosshairId > 0 && crosshairId < 32) { // Here we check if the id is a player
-		mem.Write(clientDLL + 0x316EC9C, 5); // Here we virtualy do +attack
-		Sleep(50);
-		mem.Write(clientDLL + 0x316EC9C, 4); // Here we virtualy do -attack to prepare for the next shot
+		uintptr_t entity = mem.Read<uintptr_t>(clientDll + dwEntityList + ((crosshairId - 1) * 16)); // Get the entity from the entity list
+
+		if (entity != NULL)
+		{
+			int entityTeam = mem.Read<int>(entity + m_iTeamNum); // Get the entity team
+			if (entityTeam != myTeam) {
+				mem.Write(clientDll + 0x316EC9C, 5); // Here we virtualy do +attack
+				Sleep(50);
+				mem.Write(clientDll + 0x316EC9C, 4); // Here we virtualy do -attack to prepare for the next shot
+			}
+		}
 	}
 }
 
-void Hax::Bhop(DWORD LocalPlayer, DWORD clientDLL, ProcMem& mem)
+void Hax::Bhop(uintptr_t localPlayer, uintptr_t clientDll, ProcMem& mem)
 {
-	byte flag = mem.Read<byte>(LocalPlayer + m_fFlags);
+	byte flag = mem.Read<byte>(localPlayer + m_fFlags);
 
 	if (GetAsyncKeyState(VK_SPACE) && flag & (1 << 0)) { // Check if we are on the ground
-		mem.Write<DWORD>(clientDLL + dwForceJump, 6); // Just forcing the jump
+		mem.Write<uintptr_t>(clientDll + dwForceJump, 6); // Just forcing the jump
 	}
 }
 
-void Hax::Glow(DWORD LocalPlayer, DWORD clientDLL, ProcMem& mem)
+void Hax::Glow(uintptr_t localPlayer, uintptr_t clientDll, ProcMem& mem)
 {
-	int myTeam = mem.Read<int>(LocalPlayer + m_iTeamNum); // Getting our team number
-	DWORD glowObject = mem.Read<DWORD>(clientDLL + dwGlowObjectManager); // Getting the Glowobject manager
+	int myTeam = mem.Read<int>(localPlayer + m_iTeamNum); // Getting our team number
+	uintptr_t glowObject = mem.Read<uintptr_t>(clientDll + dwGlowObjectManager); // Getting the Glowobject manager
 
 	for (int i = 0; i < 64; i++) {
 
-		DWORD entity = mem.Read<DWORD>(clientDLL + dwEntityList + i * 0x10); // Get the entity from the entity list
+		uintptr_t entity = mem.Read<uintptr_t>(clientDll + dwEntityList + i * 0x10); // Get the entity from the entity list
 
 		if (entity != NULL) { // Check if we got an entity
 
@@ -64,10 +67,15 @@ void Hax::Glow(DWORD LocalPlayer, DWORD clientDLL, ProcMem& mem)
 	}
 }
 
-void Hax::Flash(DWORD LocalPlayer, ProcMem& mem)
+void Hax::Flash(uintptr_t localPlayer, ProcMem& mem)
 {
-	if (mem.Read<float>(LocalPlayer + m_flFlashDuration) > 0) // Checking if there was/is a flashbang
+	if (mem.Read<float>(localPlayer + m_flFlashDuration) > 0) // Checking if there was/is a flashbang
 	{
-		mem.Write<float>(LocalPlayer + m_flFlashDuration, 0); // Reset the flashbang duriation to 0
+		mem.Write<float>(localPlayer + m_flFlashDuration, 0); // Reset the flashbang duriation to 0
 	}
+}
+
+void Hax::Aimbot(uintptr_t localPLayer, ProcMem& mem)
+{
+
 }

@@ -12,7 +12,7 @@
 class ProcMem {
 protected:
 	HANDLE hProcess;
-	DWORD dwPID, dwProtection, dwCaveAddress;
+	uintptr_t dwPID, dwProtection, dwCaveAddress;
 	BOOL bPOn, bIOn, bProt;
 
 public:
@@ -21,11 +21,12 @@ public:
 	int chSizeOfArray(char* chArray);
 	int iSizeOfArray(char* iArray);
 	bool iFind(int* iAry, int iVal);
-	DWORD processState();
+	uintptr_t processState();
+	std::string GetExePath();
 
 #pragma region MEMORY FUNCTIONS
 	template <class cData>
-	void Protection(DWORD dwAddress)
+	void Protection(uintptr_t dwAddress)
 	{
 		if (!bProt)
 			VirtualProtectEx(hProcess, (LPVOID)dwAddress, sizeof(cData), PAGE_EXECUTE_READWRITE, &dwProtection);
@@ -36,7 +37,7 @@ public:
 	}
 
 	template <class cData>
-	cData Read(DWORD dwAddress)
+	cData Read(uintptr_t dwAddress)
 	{
 		cData cRead;
 		ReadProcessMemory(hProcess, (LPVOID)dwAddress, &cRead, sizeof(cData), NULL);
@@ -44,14 +45,14 @@ public:
 	}
 
 	template <class cData>
-	cData Read(DWORD dwAddress, char* Offset, BOOL Type)
+	cData Read(uintptr_t dwAddress, char* Offset, BOOL Type)
 	{
 		int iSize = iSizeOfArray(Offset) - 1;
-		dwAddress = Read<DWORD>(dwAddress);
+		dwAddress = Read<uintptr_t>(dwAddress);
 
 		//Store Hex values
 		for (int i = 0; i < iSize; i++)
-			dwAddress = Read<DWORD>(dwAddress + Offset[i]);
+			dwAddress = Read<uintptr_t>(dwAddress + Offset[i]);
 
 		if (!Type)
 			return dwAddress + Offset[iSize];
@@ -60,22 +61,22 @@ public:
 	}
 
 	template <class cData>
-	void Write(DWORD dwAddress, cData Value)
+	void Write(uintptr_t dwAddress, cData Value)
 	{
 		WriteProcessMemory(hProcess, (LPVOID)dwAddress, &Value, sizeof(cData), NULL);
 	}
 
 	template <class cData>
-	void Write(DWORD dwAddress, char* Offset, cData Value)
+	void Write(uintptr_t dwAddress, char* Offset, cData Value)
 	{
 		Write<cData>(Read<cData>(dwAddress, Offset, false), Value);
 	}
 
 	virtual bool Process(char* ProcessName);
-	virtual void Patch(DWORD dwAddress, char* chPatch_Bts, char* chDefault_Bts);
-	virtual void Inject(DWORD dwAddress, char* chInj_Bts, char* chDef_Bts, BOOL Type);
-	virtual DWORD AOB_Scan(DWORD dwAddress, DWORD dwEnd, char* chPattern);
-	virtual DWORD Module(LPSTR ModuleName);
+	virtual void Patch(uintptr_t dwAddress, char* chPatch_Bts, char* chDefault_Bts);
+	virtual void Inject(uintptr_t dwAddress, char* chInj_Bts, char* chDef_Bts, BOOL Type);
+	virtual uintptr_t AOB_Scan(uintptr_t dwAddress, uintptr_t dwEnd, char* chPattern);
+	virtual uintptr_t Module(LPSTR ModuleName);
 
 #pragma endregion	
 

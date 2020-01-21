@@ -1,4 +1,5 @@
 #include "ProcMem.h"
+#include <psapi.h>
 
 using namespace std;
 
@@ -39,11 +40,26 @@ bool ProcMem::iFind(int* iAry, int iVal) {
 	return false;
 }
 
-DWORD ProcMem::processState()
+uintptr_t ProcMem::processState()
 {
 	DWORD exitCode = 0;
 	GetExitCodeProcess(hProcess, &exitCode);
 	return exitCode;
+}
+
+string ProcMem::GetExePath()
+{
+	wchar_t buffer[MAX_PATH];
+	if (hProcess) {
+		GetModuleFileNameExW(hProcess, 0, buffer, MAX_PATH);
+	}
+	else {
+		return string("");
+	}
+
+	wstring text(buffer);
+	string output(text.begin(), text.end());
+	return output;
 }
 
 #pragma endregion
@@ -68,7 +84,7 @@ bool ProcMem::Process(char* ProcessName)
 	return false;
 }
 
-void ProcMem::Patch(DWORD dwAddress, char* Patch_Bts, char* Default_Bts)
+void ProcMem::Patch(uintptr_t dwAddress, char* Patch_Bts, char* Default_Bts)
 {
 	int iSize = chSizeOfArray(Default_Bts);
 
@@ -82,7 +98,7 @@ void ProcMem::Patch(DWORD dwAddress, char* Patch_Bts, char* Default_Bts)
 	bPOn = !bPOn;
 }
 
-void ProcMem::Inject(DWORD dwAddress, char* Inj_Bts, char* Def_Bts, BOOL Type)
+void ProcMem::Inject(uintptr_t dwAddress, char* Inj_Bts, char* Def_Bts, BOOL Type)
 {
 	int i_ISize = chSizeOfArray(Inj_Bts);
 	int i_DSize = chSizeOfArray(Def_Bts);
@@ -94,19 +110,19 @@ void ProcMem::Inject(DWORD dwAddress, char* Inj_Bts, char* Def_Bts, BOOL Type)
 				Write<BYTE>(dwAddress + i, 0x90);
 		else { cout << "\nINJECTION: Default Bytes Must Be More Than 5\n"; return; }
 
-		dwCaveAddress = (DWORD)VirtualAllocEx(hProcess, NULL, i_ISize + 5, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+		dwCaveAddress = (uintptr_t)VirtualAllocEx(hProcess, NULL, i_ISize + 5, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 
-		DWORD dwRetJmp = (dwAddress + i_DSize) - dwCaveAddress - 5;
-		DWORD dwBaseJmp = dwCaveAddress - dwAddress - 5;
+		uintptr_t dwRetJmp = (dwAddress + i_DSize) - dwCaveAddress - 5;
+		uintptr_t dwBaseJmp = dwCaveAddress - dwAddress - 5;
 
 		for (int i = 0; i <= i_ISize; i++)
 			Write<BYTE>(dwCaveAddress + i, Inj_Bts[i]);
 
 		Write<BYTE>(dwCaveAddress + i_ISize, Type ? 0xE9 : 0xE8);
-		Write<DWORD>(dwCaveAddress + i_ISize + 1, dwRetJmp);
+		Write<uintptr_t>(dwCaveAddress + i_ISize + 1, dwRetJmp);
 
 		Write<BYTE>(dwAddress, Type ? 0xE9 : 0xE8);
-		Write<DWORD>(dwAddress + 1, dwBaseJmp);
+		Write<uintptr_t>(dwAddress + 1, dwBaseJmp);
 
 	}
 	else
@@ -118,7 +134,7 @@ void ProcMem::Inject(DWORD dwAddress, char* Inj_Bts, char* Def_Bts, BOOL Type)
 	bIOn = !bIOn;
 }
 
-DWORD ProcMem::AOB_Scan(DWORD dwAddress, DWORD dwEnd, char* Bytes)
+uintptr_t ProcMem::AOB_Scan(uintptr_t dwAddress, uintptr_t dwEnd, char* Bytes)
 {
 	int iBytesToRead = 0, iTmp = 0;
 	int length = chSizeOfArray(Bytes);
@@ -155,7 +171,7 @@ DWORD ProcMem::AOB_Scan(DWORD dwAddress, DWORD dwEnd, char* Bytes)
 	return 0;
 }
 
-DWORD ProcMem::Module(LPSTR ModuleName)
+uintptr_t ProcMem::Module(LPSTR ModuleName)
 {
 	HANDLE hModule = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, dwPID);
 	MODULEENTRY32 mEntry;
@@ -165,7 +181,7 @@ DWORD ProcMem::Module(LPSTR ModuleName)
 		if (!strcmp(mEntry.szModule, ModuleName))
 		{
 			CloseHandle(hModule);
-			return (DWORD)mEntry.modBaseAddr;
+			return (uintptr_t)mEntry.modBaseAddr;
 		}
 	while (Module32Next(hModule, &mEntry));
 
