@@ -14,6 +14,4 @@ public:
 	void Flash(uintptr_t localPlayer, ProcMem& mem);
 	void Radar(uintptr_t clientDll, ProcMem& mem);
 	void Aimbot(uintptr_t localPLayer, ProcMem& mem);
-
-
 };
