@@ -8,7 +8,6 @@ using namespace hazedumper::netvars;
 
 class Hax {
 public:
-
 	void Trigger(uintptr_t localPlayer, uintptr_t clientDll, ProcMem& mem);
 	void Bhop(uintptr_t localPlayer, uintptr_t clientDll, ProcMem& mem);
 	void Glow(uintptr_t localPlayer, uintptr_t clientDll, ProcMem& mem);
