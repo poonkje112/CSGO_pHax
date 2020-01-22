@@ -153,13 +153,13 @@
   <ItemGroup>
     <ClCompile Include="Hax.cpp" />
     <ClCompile Include="ProcMem.cpp" />
-    <ClCompile Include="Tf2Thesting.cpp" />
+    <ClCompile Include="CSGOTesting.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="csgo.hpp" />
     <ClInclude Include="Hax.h" />
     <ClInclude Include="ProcMem.h" />
-    <ClInclude Include="Tf2Thesting.h" />
+    <ClInclude Include="CSGOTesting.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
